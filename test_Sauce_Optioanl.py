@@ -6,56 +6,69 @@ from selenium.webdriver.support.wait import WebDriverWait #ilgili driverı bekle
 from selenium.webdriver.support import expected_conditions as ec #beklenen koşullar
 from selenium.webdriver.common.keys import Keys
 import pytest
+import openpyxl
+from constants import globalConstants as cons
+from test_Sauce import Test_SauceDemo
 
 class Test_Sauce_Optioanl:
     def setup_method(self):
         self.driver = webdriver.Chrome()
-        self.driver.get("https://www.saucedemo.com")
+        self.driver.get(cons.BASE_URL)
         self.driver.maximize_window()
     
     def teardown_method(self):
         self.driver.quit()
 
-    @pytest.mark.parametrize("username,password",[("standard_user","secret_sauce")])
-    def test_checkToCard(self,username,password):
-        usernameInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"user-name")))
-        usernameInput.send_keys(username)
-        passwordInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"password")))
-        passwordInput.send_keys(password)
-        passwordInput.send_keys(Keys.ENTER)
-        clickItem = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.XPATH,"/html/body/div/div/div/div[2]/div/div/div/div[1]/div[2]/div[2]/button")))
-        clickItem.click()
-        clickCart = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.XPATH,"//*[@id='shopping_cart_container']/a")))
-        clickCart.click()
-        checkItem = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.XPATH,"//*[@id='item_4_title_link']/div")))
-        assert checkItem.text == "Sauce Labs Backpack"
+    def getInvalidUserTestData():
+        excelFile = openpyxl.load_workbook("data/login.xlsx")
+        sheet= excelFile["invalid_login"]
+        rows = sheet.max_row
+        data = []
+        for i in range(2, rows + 1):
+            username = sheet.cell(i,1).value
+            password = sheet.cell(i,2).value
+            data.append((username,password))
+        return data
 
-    @pytest.mark.xfail
-    @pytest.mark.parametrize("username,password",[("standard_user","secret_sauce")])
-    def test_checkToCardRemoved(self,username,password):
-        usernameInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"user-name")))
+    @pytest.mark.parametrize("username,password", Test_SauceDemo.getValidUserTestData())
+    def test_checkToCard(self,username,password):
+        usernameInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,cons.USERNAME_ID)))
         usernameInput.send_keys(username)
-        passwordInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"password")))
+        passwordInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,cons.PASSWORD_ID)))
         passwordInput.send_keys(password)
         passwordInput.send_keys(Keys.ENTER)
-        addItem = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.XPATH,"/html/body/div/div/div/div[2]/div/div/div/div[1]/div[2]/div[2]/button")))
+        clickItem = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.XPATH, cons.PRODUCT_XPATH)))
+        clickItem.click()
+        clickCart = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.XPATH,cons.SHOPPING_CART_XPATH)))
+        clickCart.click()
+        checkItem = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.XPATH, cons.CART_ITEM_XPATH)))
+        assert checkItem.text == cons.ITEM_TITLE
+    @pytest.mark.xfail
+    @pytest.mark.parametrize("username,password",Test_SauceDemo.getValidUserTestData())
+    def test_checkToCardRemoved(self,username,password):
+        usernameInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,cons.USERNAME_ID)))
+        usernameInput.send_keys(username)
+        passwordInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,cons.PASSWORD_ID)))
+        passwordInput.send_keys(password)
+        passwordInput.send_keys(Keys.ENTER)
+        addItem = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.XPATH,cons.PRODUCT_XPATH)))
         addItem.click()
-        clickCart = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.XPATH,"//*[@id='shopping_cart_container']/a")))
+        clickCart = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.XPATH,cons.SHOPPING_CART_XPATH)))
         clickCart.click()
         removeItem =  WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"remove-sauce-labs-backpack")))
         removeItem.click()
         continueShopping =  WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"continue-shopping")))
         continueShopping.click()
         clickCart.click()
-        checkItem = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.XPATH,"//*[@id='item_4_title_link']/div")))
-        assert checkItem.text == "Sauce Labs Backpack"
+        checkItem = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.XPATH, cons.CART_ITEM_XPATH)))
+        assert checkItem.text == cons.ITEM_TITLE
 
-    @pytest.mark.parametrize("username,password",[("recepodemis","deneme"),("testrecep","secret_sauce"),("standard_user","test_password")])
+    @pytest.mark.parametrize("username,password", getInvalidUserTestData())
     def test_failedLogin(self,username,password):
-        usernameInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"user-name")))
+        usernameInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,cons.USERNAME_ID)))
         usernameInput.send_keys(username)
-        passwordInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,"password")))
+        passwordInput = WebDriverWait(self.driver,5).until(ec.visibility_of_element_located((By.ID,cons.PASSWORD_ID)))
         passwordInput.send_keys(password)
         passwordInput.send_keys(Keys.ENTER)
-        errorMessage = self.driver.find_element(By.XPATH, "//*[@id='login_button_container']/div/form/div[3]/h3")
+        errorMessage = self.driver.find_element(By.XPATH, cons.ERROR_MESSAGE_XPATH)
         assert errorMessage.text == "Epic sadface: Username and password do not match any user in this service"

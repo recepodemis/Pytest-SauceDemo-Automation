@@ -22,7 +22,7 @@ class Test_SauceDemo:
 
     def getInvalidUserTestData():
         excelFile = openpyxl.load_workbook("data/login.xlsx")
-        sheet= excelFile["invalid_login"]
+        sheet= excelFile["locked_out"]
         rows = sheet.max_row
         data = []
         for i in range(2, rows + 1):
