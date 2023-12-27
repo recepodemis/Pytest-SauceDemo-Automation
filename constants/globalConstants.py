@@ -1,0 +1,6 @@
+BASE_URL = "https://www.saucedemo.com"
+USERNAME_ID = "user-name"
+PASSWORD_ID = "password"
+LOGIN_BTN_ID = "login-button"
+ERROR_MESSAGE_XPATH = "//*[@id='login_button_container']/div/form/div[3]/h3"
+ITEM_CLASS_NAME = "inventory_item"
